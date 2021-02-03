@@ -442,6 +442,7 @@ Boston, MA  02110-1301, USA.
 #define IDM_AUTOLOADJOYMAP              40301
 #define IDM_RESETJOYMAP                 40302
 #define IDM_INIT_JOYSTICK               40303
+#define IDM_XINPUT                      40304
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -450,7 +451,7 @@ Boston, MA  02110-1301, USA.
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        118
-#define _APS_NEXT_COMMAND_VALUE         40304
+#define _APS_NEXT_COMMAND_VALUE         40305
 #define _APS_NEXT_CONTROL_VALUE         1092
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

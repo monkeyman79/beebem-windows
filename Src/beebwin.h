@@ -37,6 +37,7 @@ Boston, MA  02110-1301, USA.
 #include <d3dx9.h>
 #include <ddraw.h>
 #include <sapi.h>
+#include <XInput.h>
 
 #include "disctype.h"
 #include "model.h"
@@ -50,6 +51,8 @@ Boston, MA  02110-1301, USA.
 // Registry defs for disabling windows keys
 #define CFG_KEYBOARD_LAYOUT "SYSTEM\\CurrentControlSet\\Control\\Keyboard Layout"
 #define CFG_SCANCODE_MAP "Scancode Map"
+
+#define NUM_JOYSTICKS        2
 
 #define JOYSTICK_MAX_AXES    16
 #define JOYSTICK_MAX_BTNS    16
@@ -241,10 +244,13 @@ public:
 	void DisplayClientAreaText(HDC hdc);
 	void DisplayFDCBoardInfo(HDC hDC, int x, int y);
 	void SetJoystickButton(int index, bool button);
-	void ScaleJoystick(unsigned int x, unsigned int y);
-	unsigned int GetJoystickAxes(JOYCAPS& caps, unsigned int deadband, JOYINFOEX& joyInfoEx);
+	void ScaleJoystick(unsigned int x, unsigned int y, JOYCAPS& caps);
+	unsigned int GetJoystickAxes(int deadband, XINPUT_STATE& xinputState);
+	unsigned int GetJoystickAxes(JOYCAPS& caps, int deadband, JOYINFOEX& joyInfoEx);
 	void TranslateOrSendKey(int vkey, bool keyUp);
-	void TranslateJoystickMove(int joyId, JOYINFOEX& joyInfoEx);
+	void TranslateAxes(int joyId, int axesState);
+	void TranslateJoystickMove(int joyId, XINPUT_STATE& xinputState, DWORD& buttons);
+	void TranslateJoystickMove(int joyId, JOYINFOEX& joyInfoEx, JOYCAPS& caps);
 	void TranslateJoystickButtons(int joyId, unsigned int buttons);
 	void TranslateJoystick(int joyId);
 	void SetMousestickButton(int index, bool button);
@@ -343,16 +349,12 @@ public:
 	int		m_MenuIdVolume;
 	int		m_MenuIdTiming;
 	int		m_FPSTarget;
-	bool		m_JoystickCaptured;
-	JOYCAPS		m_JoystickCaps;
-	unsigned int	m_Joystick1Deadband;
-	int		m_Joystick1PrevAxes;
-	int		m_Joystick1PrevBtns;
-	bool		m_Joystick2Captured;
-	JOYCAPS		m_Joystick2Caps;
-	unsigned int	m_Joystick2Deadband;
-	int		m_Joystick2PrevAxes;
-	int		m_Joystick2PrevBtns;
+	bool		m_JoystickTimerRunning;
+	bool		m_JoystickCaptured[NUM_JOYSTICKS];
+	JOYCAPS		m_JoystickCaps[NUM_JOYSTICKS];
+	unsigned int	m_JoystickDeadband[NUM_JOYSTICKS];
+	int		m_JoystickPrevAxes[NUM_JOYSTICKS];
+	int		m_JoystickPrevBtns[NUM_JOYSTICKS];
 	int		m_MenuIdSticks;
 	bool		m_JoystickToKeys;
 	bool		m_AutoloadJoystickMap;
@@ -390,6 +392,7 @@ public:
 	bool m_HideMenuEnabled;
 	bool m_DisableMenu;
 	bool m_MenuOn;
+	bool		m_XInput = false;
 
 	char		m_customip [20];		//IP232
 	int		m_customport;
