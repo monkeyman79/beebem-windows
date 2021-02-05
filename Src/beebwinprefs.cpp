@@ -60,6 +60,7 @@ static const char *CFG_SOUND_SAMPLE_RATE = "SampleRate";
 static const char *CFG_SOUND_VOLUME = "SoundVolume";
 static const char *CFG_SOUND_ENABLED = "SoundEnabled";
 static const char *CFG_OPTIONS_STICKS = "Sticks";
+static const char *CFG_OPTIONS_STICKS2 = "Sticks2";
 static const char *CFG_OPTIONS_KEY_MAPPING = "KeyMapping";
 static const char *CFG_OPTIONS_USER_KEY_MAP_FILE = "UserKeyMapFile";
 static const char *CFG_OPTIONS_FREEZEINACTIVE = "FreezeWhenInactive";
@@ -251,6 +252,11 @@ void BeebWin::LoadPreferences()
 		m_MenuIdSticks = dword;
 	else
 		m_MenuIdSticks = 0;
+
+	if (m_Preferences.GetDWORDValue(CFG_OPTIONS_STICKS2, dword))
+		m_MenuIdSticks2 = dword;
+	else
+		m_MenuIdSticks2 = 0;
 
 	if (!m_Preferences.GetBoolValue(CFG_OPTIONS_STICKS_TO_KEYS, m_JoystickToKeys))
 		m_JoystickToKeys = false;
@@ -610,6 +616,7 @@ void BeebWin::SavePreferences(bool saveAll)
 		m_Preferences.SetBoolValue("Music5000Enabled", Music5000Enabled);
 
 		m_Preferences.SetDWORDValue(CFG_OPTIONS_STICKS, m_MenuIdSticks);
+		m_Preferences.SetDWORDValue(CFG_OPTIONS_STICKS2, m_MenuIdSticks2);
 		m_Preferences.SetBoolValue(CFG_OPTIONS_STICKS_TO_KEYS, m_JoystickToKeys);
 		m_Preferences.SetBoolValue(CFG_OPTIONS_AUTOLOAD_JOYSICK_MAP, m_AutoloadJoystickMap);
 		m_Preferences.SetBoolValue("XInputEnabled", m_XInput);

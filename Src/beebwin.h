@@ -244,7 +244,9 @@ public:
 	void DisplayClientAreaText(HDC hdc);
 	void DisplayFDCBoardInfo(HDC hDC, int x, int y);
 	void SetJoystickButton(int index, bool button);
-	void ScaleJoystick(unsigned int x, unsigned int y, JOYCAPS& caps);
+	void ScaleJoystick(int index, unsigned int x, unsigned int y,
+			unsigned int minX, unsigned int minY,
+			unsigned int maxX, unsigned int maxY);
 	unsigned int GetJoystickAxes(int deadband, XINPUT_STATE& xinputState);
 	unsigned int GetJoystickAxes(JOYCAPS& caps, int deadband, JOYINFOEX& joyInfoEx);
 	void TranslateOrSendKey(int vkey, bool keyUp);
@@ -355,7 +357,11 @@ public:
 	unsigned int	m_JoystickDeadband[NUM_JOYSTICKS];
 	int		m_JoystickPrevAxes[NUM_JOYSTICKS];
 	int		m_JoystickPrevBtns[NUM_JOYSTICKS];
+	bool		m_JoystickToKeysActive[NUM_JOYSTICKS];
+	int		m_PCStickForJoystick[NUM_JOYSTICKS];
+	int		m_PCAxesForJoystick[NUM_JOYSTICKS];
 	int		m_MenuIdSticks;
+	int		m_MenuIdSticks2;
 	bool		m_JoystickToKeys;
 	bool		m_AutoloadJoystickMap;
 	HWND		m_JoystickTarget;
@@ -608,6 +614,8 @@ public:
 	void ResetJoyMap(JoyMap* joymap);
 	bool ReadJoyMap(const char *filename, JoyMap *joymap);
 	bool WriteJoyMap(const char *filename, JoyMap *joymap);
+	bool PCJoystick1On();
+	bool PCJoystick2On();
 	void MaybeEnableInitJoystick(void);
 	bool RegCreateKey(HKEY hKeyRoot, LPCSTR lpSubKey);
 	bool RegGetBinaryValue(HKEY hKeyRoot, LPCSTR lpSubKey, LPCSTR lpValue, void* pData, int* pnSize);
