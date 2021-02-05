@@ -87,11 +87,11 @@ Boston, MA  02110-1301, USA.
 
 #define UNASSIGNED_ROW       -9
 
-typedef struct KeyMapping {
+struct KeyMapping {
 	int row;    // Beeb row
 	int col;    // Beeb col
 	bool shift; // Beeb shift state
-} KeyMapping;
+};
 
 typedef KeyMapping  KeyPair[2];
 typedef KeyPair     KeyMap[256]; // Indices are: [Virt key][shift state]
@@ -158,6 +158,14 @@ struct CUSTOMVERTEX
 
 // Our custom FVF, which describes our custom vertex structure
 #define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ|D3DFVF_DIFFUSE|D3DFVF_TEX1)
+
+struct JoystickState {
+	JOYCAPS Caps;
+	unsigned int Deadband;
+	bool Captured;
+	unsigned int PrevAxes;
+	unsigned int PrevBtns;
+};
 
 class BeebWin {
 
@@ -248,7 +256,7 @@ public:
 	unsigned int GetJoystickAxes(int deadband, XINPUT_STATE& xinputState);
 	unsigned int GetJoystickAxes(JOYCAPS& caps, int deadband, JOYINFOEX& joyInfoEx);
 	void TranslateOrSendKey(int vkey, bool keyUp);
-	void TranslateAxes(int joyId, int axesState);
+	void TranslateAxes(int joyId, unsigned int axesState);
 	void TranslateJoystickMove(int joyId, XINPUT_STATE& xinputState, DWORD& buttons);
 	void TranslateJoystickMove(int joyId, JOYINFOEX& joyInfoEx, JOYCAPS& caps);
 	void TranslateJoystickButtons(int joyId, unsigned int buttons);
@@ -350,11 +358,7 @@ public:
 	int		m_MenuIdTiming;
 	int		m_FPSTarget;
 	bool		m_JoystickTimerRunning;
-	bool		m_JoystickCaptured[NUM_JOYSTICKS];
-	JOYCAPS		m_JoystickCaps[NUM_JOYSTICKS];
-	unsigned int	m_JoystickDeadband[NUM_JOYSTICKS];
-	int		m_JoystickPrevAxes[NUM_JOYSTICKS];
-	int		m_JoystickPrevBtns[NUM_JOYSTICKS];
+	JoystickState	m_JoystickState[2];
 	int		m_MenuIdSticks;
 	bool		m_JoystickToKeys;
 	bool		m_AutoloadJoystickMap;

@@ -1,6 +1,6 @@
 /****************************************************************
 BeebEm - BBC Micro and Master 128 Emulator
-Copyright (C) 1997  Laurie Whiffen
+Copyright (C) 2021  Chris Needham
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -12,33 +12,16 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public 
-License along with this program; if not, write to the Free 
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free
 Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA  02110-1301, USA.
 ****************************************************************/
 
-#ifndef USERKYBD_HEADER
-#define USERKYBD_HEADER
+#ifndef DIALOG_HEADER
+#define DIALOG_HEADER
 
-#include <windows.h>
-
-// Public declarations.
-
-struct BBCKey
-{
-    unsigned int ctrlId;
-    const char* name;
-    int row;
-    int column;
-};
-
-const BBCKey& GetBBCKeyByName(const std::string& name);
-const BBCKey& GetBBCKeyByRowAndCol(int row, int col);
-
-bool UserKeyboardDialog(HWND hwndParent, bool joystick);
-
-extern KeyMap UserKeymap;
-extern JoyMap JoystickMap;
+bool IsDlgItemChecked(HWND hDlg, int nIDDlgItem);
+void SetDlgItemChecked(HWND hDlg, int nIDDlgItem, bool checked);
 
 #endif

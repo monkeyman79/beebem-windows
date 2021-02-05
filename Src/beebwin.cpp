@@ -207,9 +207,9 @@ BeebWin::BeebWin()
 	m_JoystickTimerRunning = false;
 	for (int i = 0; i < NUM_JOYSTICKS; ++i)
 	{
-		m_JoystickCaptured[i] = false;
-		m_JoystickPrevAxes[i] = 0;
-		m_JoystickPrevBtns[i] = 0;
+		m_JoystickState[i].Captured = false;
+		m_JoystickState[i].PrevAxes = 0;
+		m_JoystickState[i].PrevBtns = 0;
 	}
 	m_customip[0] = 0;
 	m_customport = 0;
@@ -1087,8 +1087,8 @@ void BeebWin::InitMenu(void)
 		CheckMenuItem(m_MenuIdSticks, true);
 	CheckMenuItem(IDM_JOYSTICK_TO_KEYS, m_JoystickToKeys);
 	CheckMenuItem(IDM_AUTOLOADJOYMAP, m_AutoloadJoystickMap);
-        CheckMenuItem(IDM_XINPUT, m_XInput);
-        CheckMenuItem(IDM_FREEZEINACTIVE, m_FreezeWhenInactive);
+	CheckMenuItem(IDM_XINPUT, m_XInput);
+	CheckMenuItem(IDM_FREEZEINACTIVE, m_FreezeWhenInactive);
 	CheckMenuItem(IDM_HIDECURSOR, m_HideCursor);
 	CheckMenuItem(IDM_DEFAULTKYBDMAPPING, false);
 	CheckMenuItem(IDM_LOGICALKYBDMAPPING, false);
@@ -1227,7 +1227,7 @@ void BeebWin::SetRomMenu(void)
 
 void BeebWin::MaybeEnableInitJoystick(void)
 {
-	bool enableIt = ((m_MenuIdSticks == IDM_JOYSTICK) || m_JoystickToKeys);
+	bool enableIt = m_MenuIdSticks == IDM_JOYSTICK || m_JoystickToKeys;
 	EnableMenuItem(IDM_INIT_JOYSTICK, enableIt);
 }
 
@@ -1247,30 +1247,30 @@ void BeebWin::InitJoystick(void)
 			m_JoystickTimerRunning = true;
 		}
 
-		if (!m_XInput && joyGetDevCaps(0, &m_JoystickCaps[0], sizeof(JOYCAPS)) == JOYERR_NOERROR)
+		if (!m_XInput && joyGetDevCaps(0, &m_JoystickState[0].Caps, sizeof(JOYCAPS)) == JOYERR_NOERROR)
 		{
-			m_JoystickCaptured[0] = true;
+			m_JoystickState[0].Captured = true;
 		}
 		else if (m_XInput && XInputGetCapabilities(0, 0, &caps) == ERROR_SUCCESS)
 		{
-			m_JoystickCaptured[0] = true;
+			m_JoystickState[0].Captured = true;
 		}
 		else
 		{
-			m_JoystickCaptured[0] = false;
+			m_JoystickState[0].Captured = false;
 		}
 
-		if (!m_XInput && joyGetDevCaps(1, &m_JoystickCaps[1], sizeof(JOYCAPS)) == JOYERR_NOERROR)
+		if (!m_XInput && joyGetDevCaps(1, &m_JoystickState[1].Caps, sizeof(JOYCAPS)) == JOYERR_NOERROR)
 		{
-			m_JoystickCaptured[1] = true;
+			m_JoystickState[1].Captured = true;
 		}
 		else if (m_XInput && XInputGetCapabilities(1, 0, &caps) == ERROR_SUCCESS)
 		{
-			m_JoystickCaptured[1] = true;
+			m_JoystickState[1].Captured = true;
 		}
 		else
 		{
-			m_JoystickCaptured[1] = false;
+			m_JoystickState[1].Captured = false;
 		}
 
 		if (m_MenuIdSticks == IDM_JOYSTICK)
@@ -1399,28 +1399,28 @@ unsigned int BeebWin::GetJoystickAxes(int deadband, XINPUT_STATE& xInputState)
 /****************************************************************************/
 void BeebWin::TranslateOrSendKey(int vkey, bool keyUp)
 {
-	int row, col;
-	if (m_JoystickTarget == NULL)
+	if (m_JoystickTarget == nullptr)
 	{
+		int row, col;
 		TranslateKey(vkey, keyUp, row, col);
 	}
 	else if (!keyUp)
 	{
-		// Keyboard input dialog is visible - translate button down to key down message and send to dialog
+		// Keyboard input dialog is visible - translate button down to key down
+		// message and send to dialog
 		PostMessage(m_JoystickTarget, WM_KEYDOWN, vkey, 0);
 	}
 }
 
 /****************************************************************************/
-void BeebWin::TranslateAxes(int joyId, int axesState)
+void BeebWin::TranslateAxes(int joyId, unsigned int axesState)
 {
-	const int axNum = JOYSTICK_AXES_COUNT;
 	int vkeys = (joyId == 1) ? BEEB_VKEY_JOY2_AXES : BEEB_VKEY_JOY1_AXES;
-	int& prevAxes = m_JoystickPrevAxes[joyId];
+	unsigned int& prevAxes = m_JoystickState[joyId].PrevAxes;
 
 	if (axesState != prevAxes)
 	{
-		for (int axId = 0; axId < axNum; ++axId)
+		for (int axId = 0; axId < JOYSTICK_AXES_COUNT; ++axId)
 		{
 			if ((axesState & ~prevAxes) & (1 << axId))
 			{
@@ -1438,7 +1438,7 @@ void BeebWin::TranslateAxes(int joyId, int axesState)
 /****************************************************************************/
 void BeebWin::TranslateJoystickMove(int joyId, JOYINFOEX& joyInfoEx, JOYCAPS& caps)
 {
-	unsigned int deadband = m_JoystickDeadband[joyId];
+	unsigned int deadband = m_JoystickState[joyId].Deadband;
 	unsigned int axes = mainWin->GetJoystickAxes(caps, deadband, joyInfoEx);
 	TranslateAxes(joyId, axes);
 }
@@ -1446,7 +1446,7 @@ void BeebWin::TranslateJoystickMove(int joyId, JOYINFOEX& joyInfoEx, JOYCAPS& ca
 /****************************************************************************/
 void BeebWin::TranslateJoystickMove(int joyId, XINPUT_STATE& xinputState, DWORD& buttons)
 {
-	unsigned int deadband = m_JoystickDeadband[joyId];
+	unsigned int deadband = m_JoystickState[joyId].Deadband;
 	unsigned int axes = mainWin->GetJoystickAxes(deadband, xinputState);
 	unsigned int hat_bits = (buttons & 0x3c00) >> 10;
 	buttons &= ~0x3c00;
@@ -1457,14 +1457,14 @@ void BeebWin::TranslateJoystickMove(int joyId, XINPUT_STATE& xinputState, DWORD&
 /****************************************************************************/
 void BeebWin::TranslateJoystickButtons(int joyId, unsigned int buttons)
 {
-	const int btnNum = 32;
+	const int BUTTON_COUNT = 32;
 
-	int& prevBtns = m_JoystickPrevBtns[joyId];
+	unsigned int& prevBtns = m_JoystickState[joyId].PrevBtns;
 	int vkeys = (joyId == 1) ? BEEB_VKEY_JOY2_BTN1 : BEEB_VKEY_JOY1_BTN1;
 
 	if (buttons != prevBtns)
 	{
-		for (int btnId = 0; btnId < btnNum; ++btnId)
+		for (int btnId = 0; btnId < BUTTON_COUNT; ++btnId)
 		{
 			if ((buttons & ~prevBtns) & (1 << btnId))
 			{
@@ -1475,6 +1475,7 @@ void BeebWin::TranslateJoystickButtons(int joyId, unsigned int buttons)
 				TranslateOrSendKey(vkeys + btnId, true);
 			}
 		}
+
 		prevBtns = buttons;
 	}
 }
@@ -1491,7 +1492,7 @@ void BeebWin::TranslateJoystick(int joyId)
 
 	JOYINFOEX joyInfoEx;
 	XINPUT_STATE xinputState, *pXinputState = NULL;
-	JOYCAPS* joyCaps = &m_JoystickCaps[joyId];
+	JOYCAPS* joyCaps = &m_JoystickState[joyId].Caps;
 
 	memset(&joyInfoEx, 0, sizeof(joyInfoEx));
 	memset(&xinputState, 0, sizeof(xinputState));
@@ -1499,7 +1500,7 @@ void BeebWin::TranslateJoystick(int joyId)
 	joyInfoEx.dwSize = sizeof(joyInfoEx);
 	joyInfoEx.dwFlags = JOY_RETURNALL | JOY_RETURNPOVCTS;
 	// If joystick is disabled or error occurs, reset all axes and buttons
-	if (!m_JoystickCaptured[joyId] ||
+	if (!m_JoystickState[joyId].Captured ||
 		!m_XInput && joyGetPosEx(joyId, &joyInfoEx) != JOYERR_NOERROR)
 	{
 		joyCaps = &dummyJoyCaps;
@@ -1508,7 +1509,7 @@ void BeebWin::TranslateJoystick(int joyId)
 		joyInfoEx.dwPOV = JOY_POVCENTERED;
 	}
 
-	if (m_JoystickCaptured[joyId] && m_XInput)
+	if (m_JoystickState[joyId].Captured && m_XInput)
 	{
 		joyCaps = &dummyJoyCaps;
 		pXinputState = &xinputState;
@@ -1525,8 +1526,8 @@ void BeebWin::TranslateJoystick(int joyId)
 	}
 
 	// If joystick 2 is present, but joystick 1 not, use it for BBC analog joystick
-	if (joyId == 0 && (m_JoystickCaptured[0] || !m_JoystickCaptured[1])
-		|| joyId == 1 && !m_JoystickCaptured[0] & m_JoystickCaptured[1])
+	if (joyId == 0 && (m_JoystickState[0].Captured || !m_JoystickState[1].Captured)
+		|| joyId == 1 && !m_JoystickState[0].Captured & m_JoystickState[1].Captured)
 	{
 		SetJoystickButton(0, (joyInfoEx.dwButtons & JOY_BUTTON1) != 0);
 		SetJoystickButton(1, (joyInfoEx.dwButtons & JOY_BUTTON2) != 0);
@@ -1555,10 +1556,10 @@ void BeebWin::ResetJoystick(void)
 				KillTimer(m_hWnd, 3);
 				m_JoystickTimerRunning = false;
 			}
-			m_JoystickCaptured[0] = false;
+			m_JoystickState[0].Captured = false;
 			TranslateJoystick(0);
 		}
-		m_JoystickCaptured[1] = false;
+		m_JoystickState[1].Captured = false;
 		TranslateJoystick(1);
 	}
 }
@@ -1993,10 +1994,10 @@ LRESULT CALLBACK WndProc(HWND hWnd,     // window handle
 			else if (uParam == 3)
 			{
 				// Update joysticks
-				if (mainWin->m_JoystickCaptured[0])
+				if (mainWin->m_JoystickState[0].Captured)
 					mainWin->TranslateJoystick(0);
 
-				if (mainWin->m_JoystickCaptured[1])
+				if (mainWin->m_JoystickState[1].Captured)
 					mainWin->TranslateJoystick(1);
 			}
 			break;
