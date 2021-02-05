@@ -87,11 +87,11 @@ Boston, MA  02110-1301, USA.
 
 #define UNASSIGNED_ROW       -9
 
-typedef struct KeyMapping {
+struct KeyMapping {
 	int row;    // Beeb row
 	int col;    // Beeb col
 	bool shift; // Beeb shift state
-} KeyMapping;
+};
 
 typedef KeyMapping  KeyPair[2];
 typedef KeyPair     KeyMap[256]; // Indices are: [Virt key][shift state]
@@ -158,6 +158,15 @@ struct CUSTOMVERTEX
 
 // Our custom FVF, which describes our custom vertex structure
 #define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ|D3DFVF_DIFFUSE|D3DFVF_TEX1)
+
+struct JoystickState {
+	JOYCAPS Caps;
+	unsigned int Deadband;
+	bool Captured;
+	unsigned int PrevAxes;
+	unsigned int PrevBtns;
+	bool JoystickToKeysActive;
+};
 
 class BeebWin {
 
@@ -250,7 +259,7 @@ public:
 	unsigned int GetJoystickAxes(int deadband, XINPUT_STATE& xinputState);
 	unsigned int GetJoystickAxes(JOYCAPS& caps, int deadband, JOYINFOEX& joyInfoEx);
 	void TranslateOrSendKey(int vkey, bool keyUp);
-	void TranslateAxes(int joyId, int axesState);
+	void TranslateAxes(int joyId, unsigned int axesState);
 	void TranslateJoystickMove(int joyId, XINPUT_STATE& xinputState, DWORD& buttons);
 	void TranslateJoystickMove(int joyId, JOYINFOEX& joyInfoEx, JOYCAPS& caps);
 	void TranslateJoystickButtons(int joyId, unsigned int buttons);
@@ -352,14 +361,9 @@ public:
 	int		m_MenuIdTiming;
 	int		m_FPSTarget;
 	bool		m_JoystickTimerRunning;
-	bool		m_JoystickCaptured[NUM_JOYSTICKS];
-	JOYCAPS		m_JoystickCaps[NUM_JOYSTICKS];
-	unsigned int	m_JoystickDeadband[NUM_JOYSTICKS];
-	int		m_JoystickPrevAxes[NUM_JOYSTICKS];
-	int		m_JoystickPrevBtns[NUM_JOYSTICKS];
-	bool		m_JoystickToKeysActive[NUM_JOYSTICKS];
-	int		m_PCStickForJoystick[NUM_JOYSTICKS];
-	int		m_PCAxesForJoystick[NUM_JOYSTICKS];
+	JoystickState	m_JoystickState[NUM_JOYSTICKS];
+	int		m_PCStickForJoystick[2];
+	int		m_PCAxesForJoystick[2];
 	int		m_MenuIdSticks;
 	int		m_MenuIdSticks2;
 	bool		m_JoystickToKeys;
@@ -569,7 +573,6 @@ public:
 	void Load1770DiscImage(const char *FileName, int Drive, DiscType Type);
 	void LoadTape(void);
 	void InitJoystick(void);
-	void ResetJoystick(void);
 	void RestoreState(void);
 	void SaveState(void);
 	void NewDiscImage(int Drive);
