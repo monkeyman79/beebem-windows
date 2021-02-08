@@ -161,6 +161,7 @@ struct CUSTOMVERTEX
 
 struct JoystickState {
 	JOYCAPS Caps;
+	unsigned int JoyIndex;
 	unsigned int Deadband;
 	bool Captured;
 	unsigned int PrevAxes;

@@ -211,6 +211,7 @@ BeebWin::BeebWin()
 	for (int i = 0; i < NUM_JOYSTICKS; ++i)
 	{
 		memset(&m_JoystickState[i].Caps, 0, sizeof(m_JoystickState[i].Caps));
+		m_JoystickState[i].JoyIndex = 0;
 		m_JoystickState[i].Deadband = 0;
 		m_JoystickState[i].Captured = false;
 		m_JoystickState[i].PrevAxes = 0;
@@ -1252,16 +1253,16 @@ void BeebWin::UpdateInitJoystickMenu()
 
 bool BeebWin::InitJoystick(bool verbose)
 {
-	bool Success = false;
+	bool Success = true;
 
 	if ((m_MenuIdSticks == IDM_JOYSTICK || m_JoystickToKeys) && !m_JoystickState[0].Captured)
 	{
 		Success = CaptureJoystick(0, verbose);
 	}
 
-	if (m_JoystickToKeys && !m_JoystickState[1].Captured)
+	if (Success && m_JoystickToKeys && !m_JoystickState[1].Captured)
 	{
-		Success |= CaptureJoystick(1, verbose);
+		CaptureJoystick(1, verbose);
 	}
 
 	if (!m_JoystickTimerRunning)
@@ -1279,59 +1280,70 @@ bool BeebWin::CaptureJoystick(int Index, bool verbose)
 {
 	bool success = false;
 
+	DWORD JoyIndex;
+	DWORD Result;
+
+	// Scan for first present joystick index. It doesn't have to be
+	// consecutive number.
+	if (Index == 0)
+		JoyIndex = 0;
+	else
+		JoyIndex = m_JoystickState[Index - 1].JoyIndex + 1;
+
 	if (m_XInput)
 	{
 		XINPUT_CAPABILITIES caps;
-		DWORD Result = XInputGetCapabilities(Index, XINPUT_FLAG_GAMEPAD, &caps);
 
-		if (Result == ERROR_SUCCESS)
+		Result = ERROR_DEVICE_NOT_CONNECTED;
+		while (Result != ERROR_SUCCESS && JoyIndex != XUSER_MAX_COUNT)
 		{
-			m_JoystickState[Index].Captured = true;
-			success = true;
-		}
-		else if (verbose)
-		{
-			if (Result == ERROR_DEVICE_NOT_CONNECTED)
-			{
-				char str[100];
-				sprintf(str, "Gamepad %d is not connected", Index + 1);
-
-				MessageBox(m_hWnd, str, WindowTitle, MB_OK | MB_ICONWARNING);
-			}
-			else
-			{
-				char str[100];
-				sprintf(str, "Failed to initialise gamepad %d", Index + 1);
-
-				MessageBox(m_hWnd, str, WindowTitle, MB_OK | MB_ICONWARNING);
-			}
+			Result = XInputGetCapabilities(JoyIndex, XINPUT_FLAG_GAMEPAD, &caps);
+			if (Result != ERROR_SUCCESS)
+				++JoyIndex;
 		}
 	}
 	else
 	{
-		MMRESULT Result = joyGetDevCaps(Index, &m_JoystickState[Index].Caps, sizeof(JOYCAPS));
+		JOYINFOEX joyInfoEx;
+		UINT numDevs = joyGetNumDevs();
 
-		if (Result == JOYERR_NOERROR)
+		// Find first joystick that is known AND connected
+		Result = JOYERR_UNPLUGGED;
+		while (Result != JOYERR_NOERROR && JoyIndex != numDevs)
 		{
-			m_JoystickState[Index].Captured = true;
-			success = true;
+			memset(&joyInfoEx, 0, sizeof(joyInfoEx));
+			joyInfoEx.dwSize = sizeof(joyInfoEx);
+			joyInfoEx.dwFlags = JOY_RETURNBUTTONS;
+
+			Result = joyGetDevCaps(JoyIndex, &m_JoystickState[Index].Caps, sizeof(JOYCAPS));
+			if (Result == JOYERR_NOERROR)
+				Result = joyGetPosEx(JoyIndex, &joyInfoEx);
+			if (Result != JOYERR_NOERROR)
+				++JoyIndex;
 		}
-		else if (verbose)
+	}
+
+	if (Result == ERROR_SUCCESS)
+	{
+		m_JoystickState[Index].Captured = true;
+		m_JoystickState[Index].JoyIndex = JoyIndex;
+		success = true;
+	}
+	else if (verbose)
+	{
+		if (Result == ERROR_DEVICE_NOT_CONNECTED || Result == JOYERR_UNPLUGGED)
 		{
-			if (Result == JOYERR_UNPLUGGED)
-			{
-				char str[100];
-				sprintf(str, "Joystick %d is not plugged in", Index + 1);
+			char str[100];
+			sprintf(str, "Joystick %d is not plugged in", Index + 1);
 
-				MessageBox(m_hWnd, str, WindowTitle, MB_OK | MB_ICONWARNING);
-			}
-			else
-			{
-				char str[100];
-				sprintf(str, "Failed to initialise joystick %d", Index + 1);
+			MessageBox(m_hWnd, str, WindowTitle, MB_OK | MB_ICONWARNING);
+		}
+		else
+		{
+			char str[100];
+			sprintf(str, "Failed to initialise joystick %d", Index + 1);
 
-				MessageBox(m_hWnd, str, WindowTitle, MB_OK | MB_ICONWARNING);
-			}
+			MessageBox(m_hWnd, str, WindowTitle, MB_OK | MB_ICONWARNING);
 		}
 	}
 
@@ -1553,6 +1565,7 @@ void BeebWin::TranslateJoystick(int joyId)
 	JOYINFOEX joyInfoEx;
 	XINPUT_STATE xinputState, *pXinputState = nullptr;
 	const JOYCAPS* joyCaps = &m_JoystickState[joyId].Caps;
+	DWORD joyIndex = m_JoystickState[joyId].JoyIndex;
 
 	memset(&joyInfoEx, 0, sizeof(joyInfoEx));
 	memset(&xinputState, 0, sizeof(xinputState));
@@ -1564,7 +1577,7 @@ void BeebWin::TranslateJoystick(int joyId)
 	{
 		if (!m_XInput)
 		{
-			auto result = joyGetPosEx(joyId, &joyInfoEx);
+			auto result = joyGetPosEx(joyIndex, &joyInfoEx);
 			if (result == JOYERR_NOERROR)
 			{
 				success = true;
@@ -1572,7 +1585,7 @@ void BeebWin::TranslateJoystick(int joyId)
 		}
 		else
 		{
-			auto result = XInputGetState(joyId, &xinputState);
+			auto result = XInputGetState(joyIndex, &xinputState);
 			if (result == ERROR_SUCCESS)
 			{
 				pXinputState = &xinputState;
@@ -3670,6 +3683,7 @@ void BeebWin::HandleCommand(int MenuId)
 		break;
 
 	case IDM_INIT_JOYSTICK:
+		ResetJoystick();
 		InitJoystick(true);
 		UpdateInitJoystickMenu();
 		break;
@@ -3698,7 +3712,8 @@ void BeebWin::HandleCommand(int MenuId)
 	case IDM_XINPUT:
 		ResetJoystick();
 		m_XInput = !m_XInput;
-		InitJoystick();
+		InitJoystick(false);
+		UpdateInitJoystickMenu();
 		CheckMenuItem(IDM_XINPUT, m_XInput);
 		break;
 
