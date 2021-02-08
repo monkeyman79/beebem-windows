@@ -52,10 +52,10 @@ Boston, MA  02110-1301, USA.
 #define CFG_KEYBOARD_LAYOUT "SYSTEM\\CurrentControlSet\\Control\\Keyboard Layout"
 #define CFG_SCANCODE_MAP "Scancode Map"
 
-#define NUM_JOYSTICKS        2
+#define NUM_PC_JOYSTICKS        2
 
-#define JOYSTICK_MAX_AXES    16
-#define JOYSTICK_MAX_BTNS    16
+#define JOYSTICK_MAX_AXES       16
+#define JOYSTICK_MAX_BTNS       16
 
 #define JOYSTICK_AXIS_UP        0
 #define JOYSTICK_AXIS_DOWN      1
@@ -362,11 +362,11 @@ public:
 	int		m_MenuIdTiming;
 	int		m_FPSTarget;
 	bool		m_JoystickTimerRunning;
-	JoystickState	m_JoystickState[NUM_JOYSTICKS];
+	JoystickState	m_JoystickState[NUM_PC_JOYSTICKS];
 	int		m_PCStickForJoystick[2];
 	int		m_PCAxesForJoystick[2];
-	int		m_MenuIdSticks;
-	int		m_MenuIdSticks2;
+	int		m_MenuIdSticks[2];
+	int		m_MenuIdAxes[2];
 	bool		m_JoystickToKeys;
 	bool		m_AutoloadJoystickMap;
 	HWND		m_JoystickTarget;
@@ -573,6 +573,10 @@ public:
 	int ReadDisc(int Drive, bool bCheckForPrefs);
 	void Load1770DiscImage(const char *FileName, int Drive, DiscType Type);
 	void LoadTape(void);
+	int MenuIdToStick(int menuId);
+	int StickToMenuId(int bbcStick, int pcStick);
+	int MenuIdToAxes(int menuId);
+	int AxesToMenuId(int bbcStick, int pcAxes);
 	bool InitJoystick(bool verbose = false);
 	bool CaptureJoystick(int Index, bool verbose);
 	void ResetJoystick(void);
@@ -622,7 +626,7 @@ public:
 	bool WriteJoyMap(const char *filename, JoyMap *joymap);
 	bool PCJoystick1On();
 	bool PCJoystick2On();
-	void UpdateInitJoystickMenu();
+	void UpdateJoystickMenu();
 	bool RegCreateKey(HKEY hKeyRoot, LPCSTR lpSubKey);
 	bool RegGetBinaryValue(HKEY hKeyRoot, LPCSTR lpSubKey, LPCSTR lpValue, void* pData, int* pnSize);
 	bool RegSetBinaryValue(HKEY hKeyRoot, LPCSTR lpSubKey, LPCSTR lpValue, const void* pData, int* pnSize);

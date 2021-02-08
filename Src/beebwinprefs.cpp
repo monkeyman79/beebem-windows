@@ -249,14 +249,26 @@ void BeebWin::LoadPreferences()
 		Music5000Enabled = false;
 
 	if (m_Preferences.GetDWORDValue(CFG_OPTIONS_STICKS, dword))
-		m_MenuIdSticks = dword;
+		m_MenuIdSticks[0] = dword;
 	else
-		m_MenuIdSticks = 0;
+		m_MenuIdSticks[0] = 0;
 
 	if (m_Preferences.GetDWORDValue(CFG_OPTIONS_STICKS2, dword))
-		m_MenuIdSticks2 = dword;
+		m_MenuIdSticks[1] = dword;
 	else
-		m_MenuIdSticks2 = 0;
+		m_MenuIdSticks[1] = 0;
+
+	if (m_Preferences.GetDWORDValue("JoystickAxes1", dword))
+		m_PCAxesForJoystick[0] = dword;
+	else
+		m_PCAxesForJoystick[0] = 1;
+	m_MenuIdAxes[0] = AxesToMenuId(0, m_PCAxesForJoystick[0]);
+
+	if (m_Preferences.GetDWORDValue("JoystickAxes2", dword))
+		m_PCAxesForJoystick[1] = dword;
+	else
+		m_PCAxesForJoystick[1] = 1;
+	m_MenuIdAxes[1] = AxesToMenuId(1, m_PCAxesForJoystick[1]);
 
 	if (!m_Preferences.GetBoolValue(CFG_OPTIONS_STICKS_TO_KEYS, m_JoystickToKeys))
 		m_JoystickToKeys = false;
@@ -615,8 +627,11 @@ void BeebWin::SavePreferences(bool saveAll)
 		m_Preferences.SetBoolValue("TextToSpeechEnabled", m_TextToSpeechEnabled);
 		m_Preferences.SetBoolValue("Music5000Enabled", Music5000Enabled);
 
-		m_Preferences.SetDWORDValue(CFG_OPTIONS_STICKS, m_MenuIdSticks);
-		m_Preferences.SetDWORDValue(CFG_OPTIONS_STICKS2, m_MenuIdSticks2);
+		m_Preferences.SetDWORDValue(CFG_OPTIONS_STICKS, m_MenuIdSticks[0]);
+		m_Preferences.SetDWORDValue(CFG_OPTIONS_STICKS2, m_MenuIdSticks[1]);
+		m_Preferences.SetDWORDValue("JoystickAxes1", m_PCAxesForJoystick[0]);
+		m_Preferences.SetDWORDValue("JoystickAxes2", m_PCAxesForJoystick[1]);
+
 		m_Preferences.SetBoolValue(CFG_OPTIONS_STICKS_TO_KEYS, m_JoystickToKeys);
 		m_Preferences.SetBoolValue(CFG_OPTIONS_AUTOLOAD_JOYSICK_MAP, m_AutoloadJoystickMap);
 		m_Preferences.SetBoolValue("XInputEnabled", m_XInput);
