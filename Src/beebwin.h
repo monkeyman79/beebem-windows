@@ -161,6 +161,7 @@ struct CUSTOMVERTEX
 
 struct JoystickState {
 	JOYCAPS Caps;
+	unsigned int JoyIndex;
 	unsigned int Deadband;
 	bool Captured;
 	unsigned int PrevAxes;
@@ -256,12 +257,12 @@ public:
 	void ScaleJoystick(int index, unsigned int x, unsigned int y,
 			unsigned int minX, unsigned int minY,
 			unsigned int maxX, unsigned int maxY);
-	unsigned int GetJoystickAxes(int deadband, XINPUT_STATE& xinputState);
-	unsigned int GetJoystickAxes(JOYCAPS& caps, int deadband, JOYINFOEX& joyInfoEx);
+	unsigned int GetJoystickAxes(int deadband, const XINPUT_STATE& xinputState);
+	unsigned int GetJoystickAxes(const JOYCAPS& caps, int deadband, const JOYINFOEX& joyInfoEx);
 	void TranslateOrSendKey(int vkey, bool keyUp);
 	void TranslateAxes(int joyId, unsigned int axesState);
-	void TranslateJoystickMove(int joyId, XINPUT_STATE& xinputState, DWORD& buttons);
-	void TranslateJoystickMove(int joyId, JOYINFOEX& joyInfoEx, JOYCAPS& caps);
+	void TranslateJoystickMove(int joyId, const XINPUT_STATE& xinputState, DWORD& buttons);
+	void TranslateJoystickMove(int joyId, const JOYINFOEX& joyInfoEx, const JOYCAPS& caps);
 	void TranslateJoystickButtons(int joyId, unsigned int buttons);
 	void TranslateJoystick(int joyId);
 	void SetMousestickButton(int index, bool button);
@@ -460,7 +461,7 @@ public:
 	bool		m_EmuPaused;
 	bool		m_StartPaused;
 	bool		m_WasPaused;
-	bool		m_J2KWasEnabled;
+	bool		m_JoystickToKeysWasEnabled;
 	bool		m_AutoBootDisc;
 	bool		m_KeyboardTimerElapsed;
 	bool		m_BootDiscTimerElapsed;
@@ -572,7 +573,9 @@ public:
 	int ReadDisc(int Drive, bool bCheckForPrefs);
 	void Load1770DiscImage(const char *FileName, int Drive, DiscType Type);
 	void LoadTape(void);
-	void InitJoystick(void);
+	bool InitJoystick(bool verbose = false);
+	bool CaptureJoystick(int Index, bool verbose);
+	void ResetJoystick(void);
 	void RestoreState(void);
 	void SaveState(void);
 	void NewDiscImage(int Drive);
@@ -619,7 +622,7 @@ public:
 	bool WriteJoyMap(const char *filename, JoyMap *joymap);
 	bool PCJoystick1On();
 	bool PCJoystick2On();
-	void MaybeEnableInitJoystick(void);
+	void UpdateInitJoystickMenu();
 	bool RegCreateKey(HKEY hKeyRoot, LPCSTR lpSubKey);
 	bool RegGetBinaryValue(HKEY hKeyRoot, LPCSTR lpSubKey, LPCSTR lpValue, void* pData, int* pnSize);
 	bool RegSetBinaryValue(HKEY hKeyRoot, LPCSTR lpSubKey, LPCSTR lpValue, const void* pData, int* pnSize);

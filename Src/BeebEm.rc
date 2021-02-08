@@ -740,7 +740,7 @@ BEGIN
             MENUITEM "Load Joystick Mapping...",      IDM_LOADJOYMAP
             MENUITEM "Save Joystick Mapping...",      IDM_SAVEJOYMAP
         END
-        MENUITEM "Reinitialize Joysticks",      IDM_INIT_JOYSTICK
+        MENUITEM "Initialise Joysticks",        IDM_INIT_JOYSTICK
         MENUITEM "Use XInput API",              IDM_XINPUT
         MENUITEM SEPARATOR
         MENUITEM "&Freeze when inactive",       IDM_FREEZEINACTIVE
