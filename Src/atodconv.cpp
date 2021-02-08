@@ -118,6 +118,8 @@ void AtoD_poll_real(void)
 	case 3:
 		value = JoystickY[1];
 		break;
+	default:
+		value = 0;
 	}
 
 	AtoDState.status |= (value & 0xc000)>>10;

@@ -1319,7 +1319,6 @@ bool BeebWin::InitJoystick(bool verbose)
 	default:
 		m_PCStickForJoystick[0] = 0;
 		m_PCAxesForJoystick[0] = 0;
-		break;
 	}
 
 	switch (m_MenuIdSticks2)
@@ -1351,7 +1350,6 @@ bool BeebWin::InitJoystick(bool verbose)
 	default:
 		m_PCStickForJoystick[1] = 0;
 		m_PCAxesForJoystick[1] = 0;
-		break;
 	}
 
 	// PC joystick 1 must be captured to be able to capture PC joystick 2
@@ -3923,7 +3921,7 @@ void BeebWin::HandleCommand(int MenuId)
 
 	case IDM_JOYSTICK_TO_KEYS:
 		m_JoystickToKeys = !m_JoystickToKeys;
-		InitJoystick();
+		InitJoystick(false);
 		CheckMenuItem(IDM_JOYSTICK_TO_KEYS, m_JoystickToKeys);
 		UpdateInitJoystickMenu();
 		break;
