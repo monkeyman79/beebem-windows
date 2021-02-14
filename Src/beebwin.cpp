@@ -1121,8 +1121,6 @@ void BeebWin::InitMenu(void)
 	if (m_MenuIdAxes[1] != 0)
 		CheckMenuItem(m_MenuIdAxes[1], true);
 
-	UpdateJoystickMenu();
-
 	CheckMenuItem(IDM_JOYSTICK_TO_KEYS, m_JoystickToKeys);
 	CheckMenuItem(IDM_AUTOLOADJOYMAP, m_AutoloadJoystickMap);
 	CheckMenuItem(IDM_XINPUT, m_XInput);
@@ -1477,6 +1475,8 @@ bool BeebWin::InitJoystick(bool verbose)
 			m_JoystickTimerRunning = false;
 		}
 	}
+
+	UpdateJoystickMenu();
 
 	return Success;
 }
@@ -3945,7 +3945,6 @@ void BeebWin::HandleCommand(int MenuId)
 		}
 
 		InitJoystick(false);
-		UpdateJoystickMenu();
 		break;
 
 	case IDM_JOY2_PCJOY1:
@@ -3980,7 +3979,6 @@ void BeebWin::HandleCommand(int MenuId)
 				m_MenuIdSticks[1] = 0;
 		}
 		InitJoystick(false);
-		UpdateJoystickMenu();
 		break;
 
 	case IDM_JOY1_PRIMARY:
@@ -4004,14 +4002,12 @@ void BeebWin::HandleCommand(int MenuId)
 	case IDM_INIT_JOYSTICK:
 		ResetJoystick();
 		InitJoystick(true);
-		UpdateJoystickMenu();
 		break;
 
 	case IDM_JOYSTICK_TO_KEYS:
 		m_JoystickToKeys = !m_JoystickToKeys;
 		InitJoystick(false);
 		CheckMenuItem(IDM_JOYSTICK_TO_KEYS, m_JoystickToKeys);
-		UpdateJoystickMenu();
 		break;
 
 	case IDM_AUTOLOADJOYMAP:
@@ -4023,7 +4019,6 @@ void BeebWin::HandleCommand(int MenuId)
 		ResetJoystick();
 		m_XInput = !m_XInput;
 		InitJoystick(false);
-		UpdateJoystickMenu();
 		CheckMenuItem(IDM_XINPUT, m_XInput);
 		break;
 
