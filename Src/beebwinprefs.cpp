@@ -277,9 +277,6 @@ void BeebWin::LoadPreferences()
 	    m_AutoloadJoystickMap))
 		m_AutoloadJoystickMap = false;
 
-	if (!m_Preferences.GetBoolValue("XInputEnabled", m_XInput))
-		m_XInput = false;
-
 	if (m_Preferences.GetDWORDValue(CFG_OPTIONS_STICK1_DEADBAND, dword))
 		m_JoystickState[0].Deadband = dword;
 	else
@@ -634,7 +631,6 @@ void BeebWin::SavePreferences(bool saveAll)
 
 		m_Preferences.SetBoolValue(CFG_OPTIONS_STICKS_TO_KEYS, m_JoystickToKeys);
 		m_Preferences.SetBoolValue(CFG_OPTIONS_AUTOLOAD_JOYSICK_MAP, m_AutoloadJoystickMap);
-		m_Preferences.SetBoolValue("XInputEnabled", m_XInput);
 		m_Preferences.SetDWORDValue(CFG_OPTIONS_STICK1_DEADBAND, m_JoystickState[0].Deadband);
 		m_Preferences.SetDWORDValue(CFG_OPTIONS_STICK2_DEADBAND, m_JoystickState[1].Deadband);
 

@@ -442,7 +442,6 @@ Boston, MA  02110-1301, USA.
 #define IDM_AUTOLOADJOYMAP              40301
 #define IDM_RESETJOYMAP                 40302
 #define IDM_INIT_JOYSTICK               40303
-#define IDM_XINPUT                      40304
 #define IDM_JOY1_PCJOY2                 40305
 #define IDM_JOY1_PRIMARY                40306
 #define IDM_JOY1_SECONDARY1             40307

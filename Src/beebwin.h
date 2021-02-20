@@ -37,7 +37,6 @@ Boston, MA  02110-1301, USA.
 #include <d3dx9.h>
 #include <ddraw.h>
 #include <sapi.h>
-#include <XInput.h>
 
 #include "disctype.h"
 #include "model.h"
@@ -257,11 +256,9 @@ public:
 	void ScaleJoystick(int index, unsigned int x, unsigned int y,
 			unsigned int minX, unsigned int minY,
 			unsigned int maxX, unsigned int maxY);
-	unsigned int GetJoystickAxes(int deadband, const XINPUT_STATE& xinputState);
 	unsigned int GetJoystickAxes(const JOYCAPS& caps, int deadband, const JOYINFOEX& joyInfoEx);
 	void TranslateOrSendKey(int vkey, bool keyUp);
 	void TranslateAxes(int joyId, unsigned int axesState);
-	void TranslateJoystickMove(int joyId, const XINPUT_STATE& xinputState, DWORD& buttons);
 	void TranslateJoystickMove(int joyId, const JOYINFOEX& joyInfoEx, const JOYCAPS& caps);
 	void TranslateJoystickButtons(int joyId, unsigned int buttons);
 	void TranslateJoystick(int joyId);
@@ -403,7 +400,6 @@ public:
 	bool m_HideMenuEnabled;
 	bool m_DisableMenu;
 	bool m_MenuOn;
-	bool		m_XInput = false;
 
 	char		m_customip [20];		//IP232
 	int		m_customport;
